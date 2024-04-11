@@ -174,7 +174,7 @@
                 type: 'symbol',
                 source: 'venues',
                 layout: {
-                    'text-field': ['get', 'Year'],
+                    "text-field": ["concat", ["get", "City"], " ", ["get", "Country"], " ", ["get", "Year"]],
                     'text-variable-anchor': ['bottom', 'left', 'right', 'top'],
                     // 'text-radial-offset': 1,
                     // offset the anchor of the text to the right 20px
