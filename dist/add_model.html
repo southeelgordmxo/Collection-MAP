@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Add 3D model</title>
+    <title>Model Swapper</title>
     <meta
       name="viewport"
       content="initial-scale=1,maximum-scale=1,user-scalable=no"
@@ -89,9 +89,75 @@
         color: #222;
         background: #e6e6e6;
       }
+      /* light switch */
+      .toggle-switch {
+        position: absolute;
+        width: 80px;
+        top: 62px;
+        --light: #999b9d;
+        --dark: #28292c;
+        --sun: #f2bc19;
+        --link: rgb(27, 129, 112);
+        --link-hover: rgb(24, 94, 82);
+      }
+
+      .switch-label {
+        position: absolute;
+        width: 75%;
+        height: 16px;
+        background-color: var(--dark);
+        border-radius: 25px;
+        cursor: pointer;
+        /* border: 3px solid var(--dark); */
+        /* right: 0px; */
+      }
+
+      .light-checkbox {
+        position: absolute;
+        display: none;
+      }
+
+      .toggle-slider {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 25px;
+        -webkit-transition: 0.3s;
+        transition: 0.3s;
+      }
+
+      .light-checkbox:checked ~ .toggle-slider {
+        background-color: var(--light);
+      }
+
+      .toggle-slider::before {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 3px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        -webkit-box-shadow: inset 12px -4px 0px 0px var(--light);
+        box-shadow: inset 12px -4px 0px 0px var(--light);
+        background-color: var(--dark);
+        -webkit-transition: 0.3s;
+        transition: 0.3s;
+      }
+
+      .light-checkbox:checked ~ .toggle-slider::before {
+        -webkit-transform: translateX(40px);
+        -ms-transform: translateX(40px);
+        transform: translateX(40px);
+        background-color: var(--sun);
+        -webkit-box-shadow: none;
+        box-shadow: none;
+      }
+      /* footer */
       img {
         width: 30px;
-        /* margin-bottom: 10px; */
+        border: 0.7px solid;
+        border-radius: 5px;
       }
 
       .logo {
@@ -127,6 +193,12 @@
     <div id="map"></div>
     <div id="sidebar">
       <h2>Model Swapper</h2>
+      <div class="toggle-switch">
+        <label class="switch-label">
+          <input type="checkbox" class="light-checkbox" checked />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
       <div id="upload-model">
         <h3>Link to model</h3>
         <input
@@ -189,6 +261,7 @@
         <h3>Model Properties <button id="copy-button">📋</button></h3>
         <div id="modelProps" class="copy-box"></div>
       </div>
+
       <div id="logo" class="logo">
         <a href="https://geografa.io/"
           ><img src="./img/logo-geografa.png" alt="geografa.io"
@@ -332,7 +405,7 @@
 
       map.on("style.load", () => {
         // set the light preset to be in day mode.
-        map.setConfigProperty("basemap", "lightPreset", "dusk");
+        map.setConfigProperty("basemap", "lightPreset", "day");
       });
       map.on("load", () => {
         // add the eraser source and layer to the map
@@ -563,6 +636,16 @@
         document.getElementById("map").style.filter = "none";
         document.getElementById("sidebar").style.display = "block";
       });
+      // change the basemap light preset based on the checkbox value
+      document
+        .querySelector(".light-checkbox")
+        .addEventListener("change", (e) => {
+          if (e.target.checked) {
+            map.setConfigProperty("basemap", "lightPreset", "day");
+          } else {
+            map.setConfigProperty("basemap", "lightPreset", "night");
+          }
+        });
     </script>
   </body>
 </html>
