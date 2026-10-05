@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Trick or Treat</title>
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <link
+      href="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css"
+      rel="stylesheet"
+    />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+      mapboxgl.accessToken =
+        "pk.eyJ1IjoiZ3JhZmEiLCJhIjoiY20wdTdlcTM3MTRsZDJxcGxmcW85MzQxMCJ9.H-wLHlLXdbtIQ9R1zsDuJg";
+      const map = new mapboxgl.Map({
+        container: "map", // container ID
+        style: "mapbox://styles/grafa/cm2ctot6900vn01om655a5yda",
+        center: [-122.6562941, 45.54706036],
+        zoom: 16.6,
+        bearing: 133.9,
+        pitch: 67,
+      });
+
+      // set to night style
+      map.on("style.load", () => {
+        map.setConfigProperty("basemap", "lightPreset", "night");
+      });
+      // use turf random to generate random points in the area of the map
+      const randomPoints = turf.randomPoint(100, {
+        bbox: [-122.65899, 45.53488, -122.63639, 45.54851],
+      });
+
+      // buffer each stop by 100 meters
+      const bufferedStops = randomPoints.features.map((stop) => {
+        return turf.buffer(stop, 0.05);
+      });
+
+      // create a feature collection of the buffered stops and add a unique id to each feature
+      const fence = {
+        type: "FeatureCollection",
+        features: bufferedStops.map((feature, index) => {
+          return {
+            ...feature,
+            id: index,
+          };
+        }),
+      };
+      map.on("load", function () {
+        map.addSource("fence", {
+          type: "geojson",
+          data: fence,
+        });
+        map.addLayer({
+          id: "fence-blur",
+          type: "line",
+          source: "fence",
+          slot: "top",
+          layout: {},
+          paint: {
+            "line-color": "#f30",
+            "line-width": 12,
+            "line-opacity": 0.6,
+            "line-blur": 2,
+            "line-emissive-strength": 1,
+          },
+        });
+        map.addLayer({
+          id: "fence-layer",
+          type: "line",
+          source: "fence",
+          slot: "top",
+          layout: {},
+          paint: {
+            "line-color": "#f30",
+            "line-width": 2,
+            "line-emissive-strength": 1,
+          },
+        });
+        // add a model layer to the map
+        map.addSource("model-source", {
+          type: "geojson",
+          data: randomPoints,
+        });
+        map.addModel("ghost", "./models/ghost.glb");
+        map.addLayer({
+          id: "model-layer",
+          type: "model",
+          source: "model-source",
+          layout: {
+            "model-id": "ghost",
+          },
+          paint: {
+            "model-scale": [10, 10, 10],
+            "model-rotation": [0, 0, 90],
+            "model-translation": [0, 0, 10],
+            "model-emissive-strength": 1,
+          },
+        });
+        let ghostHeight = 10;
+        function ghostFloat(timestamp) {
+          ghostHeight = Math.cos(timestamp / 1000) * 10;
+          map.setPaintProperty("model-layer", "model-translation", [
+            0,
+            0,
+            ghostHeight,
+          ]);
+          requestAnimationFrame(ghostFloat);
+        }
+        requestAnimationFrame(ghostFloat);
+      });
+    </script>
+  </body>
+</html>
